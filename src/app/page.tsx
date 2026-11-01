@@ -12,26 +12,47 @@ export default async function Home() {
           Admin
         </Link>
       </header>
-      {products.length === 0 && <p className="text-neutral-600">No active products.</p>}
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((p) => (
-          <li key={p.id} className="rounded-lg border p-4">
-            {p.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.imageUrl} alt={p.name} className="mb-3 h-40 w-full rounded object-cover" />
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-neutral-50 text-neutral-500">
+            <tr>
+              <th className="p-3">Product</th>
+              <th className="p-3">Category</th>
+              <th className="p-3">Description</th>
+              <th className="p-3 text-right">Price</th>
+              <th className="p-3 text-right">Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p.id} className="border-t">
+                <td className="p-3 font-medium">
+                  <span className="flex items-center gap-3">
+                    {p.imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.imageUrl} alt="" className="h-10 w-10 rounded object-cover" />
+                    )}
+                    {p.name}
+                  </span>
+                </td>
+                <td className="p-3">{p.category?.name ?? "—"}</td>
+                <td className="p-3 text-neutral-600">{p.description}</td>
+                <td className="p-3 text-right font-semibold">{money(p.priceCents, p.currency)}</td>
+                <td className={`p-3 text-right ${p.stock > 0 ? "text-neutral-600" : "text-red-700"}`}>
+                  {p.stock > 0 ? p.stock : "Out of stock"}
+                </td>
+              </tr>
+            ))}
+            {products.length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-4 text-neutral-500">
+                  No active products.
+                </td>
+              </tr>
             )}
-            <p className="text-xs text-neutral-500">{p.category?.name ?? "Uncategorised"}</p>
-            <h2 className="font-medium">{p.name}</h2>
-            <p className="mb-2 line-clamp-2 text-sm text-neutral-600">{p.description}</p>
-            <p className="flex justify-between text-sm">
-              <span className="font-semibold">{money(p.priceCents, p.currency)}</span>
-              <span className={p.stock > 0 ? "text-neutral-500" : "text-red-700"}>
-                {p.stock > 0 ? `${p.stock} in stock` : "Out of stock"}
-              </span>
-            </p>
-          </li>
-        ))}
-      </ul>
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

@@ -85,3 +85,17 @@ Every write/delete is logged: `[mcp][write] <ISO time> token=<name> tool=<tool> 
 ## Versions
 
 `mcp-handler@1.1.0` + `@modelcontextprotocol/sdk@1.26.0` (exact pins; mcp-handler 2.x moved to a different package, `@modelcontextprotocol/server`), `zod@3.25.76`, `prisma` / `@prisma/client` 7.10.1.
+
+## Deploy on Vercel
+
+1. Import the repo in Vercel (framework: Next.js). Vercel runs the `vercel-build` script automatically:
+   `prisma generate && prisma migrate deploy && next build` - so the Prisma client is generated and pending migrations are applied on every deploy.
+2. In **Project Settings -> Environment Variables** add (do **not** commit a `.env`):
+   - `DATABASE_URL` - Neon **pooled** connection string (used by the app)
+   - `DIRECT_URL` - optional, Neon **direct** (non-pooled) string, used only by `prisma migrate`
+   - `ADMIN_PASSWORD`, `SESSION_SECRET`
+   - `MCP_TOKEN_OWNER="admin:<token>"`, `MCP_TOKEN_CREATOR="create:<token>"`, `MCP_TOKEN_VIEWER="read:<token>"` (generate new tokens for production)
+3. Seed once from your machine if you want sample data: `npx prisma db seed` (with `DATABASE_URL` pointing at the target DB).
+4. Point Claude Desktop / `mcp-remote` at `https://<your-domain>/api/mcp` with the token in the `Authorization: Bearer` header.
+
+Notes: new migrations go in via `npx prisma migrate dev` locally and are committed; preview deployments also run `migrate deploy`, so give previews their own database (a Neon branch) if you don't want them touching production.
