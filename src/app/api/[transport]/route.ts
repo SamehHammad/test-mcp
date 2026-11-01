@@ -1,5 +1,6 @@
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import { verifyToken } from "@/lib/mcp/auth";
+import { drainBeforeReturn } from "@/lib/mcp/helpers";
 import { registerDeleteTools } from "@/lib/mcp/tools/delete";
 import { registerReadTools } from "@/lib/mcp/tools/read";
 import { registerWriteTools } from "@/lib/mcp/tools/write";
@@ -17,6 +18,6 @@ const handler = createMcpHandler(
   { basePath: "/api", disableSse: true },
 );
 
-const authed = withMcpAuth(handler, verifyToken, { required: true });
+const authed = drainBeforeReturn(withMcpAuth(handler, verifyToken, { required: true }));
 
 export { authed as GET, authed as POST, authed as DELETE };

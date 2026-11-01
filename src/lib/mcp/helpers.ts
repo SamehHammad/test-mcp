@@ -68,3 +68,18 @@ export function defineTool<S extends ZodRawShape>(
     }) as never,
   );
 }
+
+/**
+ * mcp-handler returns its Response before the tool has finished (the body is streamed).
+ * Next flushes revalidateTag/revalidatePath calls when the route handler returns, so a
+ * revalidation made inside a tool would land too late and be dropped. Draining the body
+ * first makes sure tools (and their revalidations) complete inside the request.
+ */
+export function drainBeforeReturn(handler: (req: Request) => Promise<Response>) {
+  return async (req: Request) => {
+    const res = await handler(req);
+    if (req.method !== "POST" || !res.body) return res;
+    const body = await res.arrayBuffer();
+    return new Response(body, { status: res.status, statusText: res.statusText, headers: res.headers });
+  };
+}
