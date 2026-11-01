@@ -17,7 +17,7 @@ npm run dev
 - `DATABASE_URL` - Postgres connection string. Prisma is configured in `prisma.config.ts`; the client uses `@prisma/adapter-pg`.
 - `ADMIN_PASSWORD` - password for `/login`.
 - `SESSION_SECRET` - random string (>= 32 chars) used to HMAC-sign the session cookie.
-- `MCP_TOKENS` - comma-separated `name:scope:token`, e.g. `owner:admin:abc...,viewer:read:def...,editor:write:ghi...`.
+- `MCP_TOKEN_<NAME>` - one variable per token: `MCP_TOKEN_OWNER="admin:<token>"`, `MCP_TOKEN_CREATOR="create:<token>"`, `MCP_TOKEN_VIEWER="read:<token>"` (scope: read | create | write | admin). The audit-log name is the lowercased suffix. The old comma-separated `MCP_TOKENS=name:scope:token,...` still works.
 
 Pages: `/` (ACTIVE products), `/login`, `/admin/products`, `/admin/categories`.
 
@@ -31,7 +31,7 @@ Endpoint: `http://localhost:3000/api/mcp` (Streamable HTTP, stateless, Bearer au
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Add it to `MCP_TOKENS` as `name:scope:<token>` and restart the server.
+Add it as a new variable `MCP_TOKEN_<NAME>="<scope>:<token>"` and restart the server.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -55,7 +55,7 @@ Choose transport **Streamable HTTP**, URL `http://localhost:3000/api/mcp`, and a
 
 ### Tools and minimum scope
 
-Scopes are cumulative: `read` < `write` < `admin`.
+Scopes: `read` = read only; `create` = read + create (no update, no delete); `write` = read + create + update; `admin` = everything incl. delete.
 
 | Tool | Min scope | Purpose |
 | --- | --- | --- |
@@ -64,10 +64,10 @@ Scopes are cumulative: `read` < `write` < `admin`.
 | `search_products` | read | Text search; use first to get ids |
 | `get_product` | read | One product by id or slug |
 | `list_categories` | read | Categories with ids and product counts |
-| `create_product` | write | Create a product (price in cents) |
+| `create_product` | create | Create a product (price in cents) |
 | `update_product` | write | Partial update (only fields sent) |
 | `set_product_stock` | write | Set absolute stock |
-| `create_category` | write | Create a category |
+| `create_category` | create | Create a category |
 | `update_category` | write | Rename / change slug |
 | `delete_product` | admin | Needs `confirm: true` + `expectedName`; prefer status ARCHIVED |
 | `delete_category` | admin | Needs `confirm: true` + `expectedName`; refused if it has products |

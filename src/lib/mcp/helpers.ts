@@ -3,7 +3,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import type { ZodRawShape, z } from "zod";
 import { explainError } from "@/services/errors";
-import { callerName, hasScope, type McpScope } from "./auth";
+import { callerName, hasScope, type McpAction } from "./auth";
 
 export const ok = (data: unknown): CallToolResult => ({
   content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
@@ -21,13 +21,13 @@ export function defineTool<S extends ZodRawShape>(
   def: {
     name: string;
     description: string;
-    scope: McpScope;
+    needs: McpAction;
     input: S;
     hint?: "read" | "write" | "delete";
     run: (args: z.objectOutputType<S, z.ZodTypeAny>, who: string) => Promise<unknown>;
   },
 ) {
-  const mutates = def.scope !== "read";
+  const mutates = def.needs !== "read";
   server.registerTool(
     def.name,
     {
@@ -42,12 +42,12 @@ export function defineTool<S extends ZodRawShape>(
     (async (args: z.objectOutputType<S, z.ZodTypeAny>, extra: Extra) => {
       const who = callerName(extra.authInfo);
       try {
-        if (!hasScope(extra.authInfo, def.scope)) {
+        if (!hasScope(extra.authInfo, def.needs)) {
           const have = extra.authInfo?.scopes[0] ?? "none";
           return fail(
             have === "read"
-              ? `This token is read-only; "${def.name}" needs the ${def.scope} scope.`
-              : `This token (scope: ${have}) is not allowed to use "${def.name}"; it needs the ${def.scope} scope.`,
+              ? `This token is read-only; "${def.name}" needs the ${def.needs} permission.`
+              : `This token (scope: ${have}) is not allowed to ${def.needs} ("${def.name}").`
           );
         }
         if (mutates) {

@@ -21,7 +21,7 @@ function requireConfirmation(confirm: boolean | undefined, expectedName: string 
 export function registerDeleteTools(server: McpServer) {
   defineTool(server, {
     name: "delete_product",
-    scope: "admin",
+    needs: "delete",
     hint: "delete",
     description:
       "PERMANENTLY delete a product. Irreversible. Prefer update_product with status=ARCHIVED unless the user explicitly wants it gone. Requires confirm=true AND expectedName equal to the product's current name (get both from search_products / get_product first; confirm with the user).",
@@ -38,7 +38,7 @@ export function registerDeleteTools(server: McpServer) {
 
   defineTool(server, {
     name: "delete_category",
-    scope: "admin",
+    needs: "delete",
     hint: "delete",
     description:
       "PERMANENTLY delete an empty category. Refused if the category still has products (move them with update_product first). Requires confirm=true AND expectedName equal to the category's current name (get both from list_categories; confirm with the user).",

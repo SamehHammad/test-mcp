@@ -8,7 +8,7 @@ import { defineTool } from "../helpers";
 export function registerReadTools(server: McpServer) {
   defineTool(server, {
     name: "get_store_stats",
-    scope: "read",
+    needs: "read",
     description:
       "Summary of the catalogue: product counts by status, category count, units in stock and inventory value (cents) for ACTIVE products, and how many ACTIVE products are low on stock (<=5). Use for overview questions.",
     input: {},
@@ -17,7 +17,7 @@ export function registerReadTools(server: McpServer) {
 
   defineTool(server, {
     name: "list_products",
-    scope: "read",
+    needs: "read",
     description:
       "List products page by page (newest first, max 50 per page). Optionally filter by status or categoryId. To find a product by name or keyword use search_products instead. Each item includes its id, which other tools need.",
     input: {
@@ -31,7 +31,7 @@ export function registerReadTools(server: McpServer) {
 
   defineTool(server, {
     name: "search_products",
-    scope: "read",
+    needs: "read",
     description:
       "Search products by text (matches name, slug and description). ALWAYS use this first when the user mentions a product by name, to get its id before calling get_product, update_product, set_product_stock or delete_product. Never guess ids.",
     input: {
@@ -44,7 +44,7 @@ export function registerReadTools(server: McpServer) {
 
   defineTool(server, {
     name: "get_product",
-    scope: "read",
+    needs: "read",
     description:
       "Get one product's full details by id OR slug (provide exactly one). If you only know the name, call search_products first.",
     input: {
@@ -56,7 +56,7 @@ export function registerReadTools(server: McpServer) {
 
   defineTool(server, {
     name: "list_categories",
-    scope: "read",
+    needs: "read",
     description:
       "List all categories with their ids, slugs and product counts. Use it to find a categoryId before creating or updating a product, or a category id before update_category / delete_category.",
     input: {},

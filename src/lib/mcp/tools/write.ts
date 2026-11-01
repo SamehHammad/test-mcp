@@ -11,7 +11,7 @@ const idField = z.string().min(1).describe("Product id - get it from search_prod
 export function registerWriteTools(server: McpServer) {
   defineTool(server, {
     name: "create_product",
-    scope: "write",
+    needs: "create",
     hint: "write",
     description:
       "Create a new product. Prices are integers in cents (19.99 USD = 1999). New products default to status DRAFT; set status ACTIVE to show it on the public page. Use list_categories to get a categoryId. Search first to avoid creating duplicates.",
@@ -21,7 +21,7 @@ export function registerWriteTools(server: McpServer) {
 
   defineTool(server, {
     name: "update_product",
-    scope: "write",
+    needs: "update",
     hint: "write",
     description:
       "Update an existing product. Send ONLY the fields you want to change; omitted fields stay as they are. Get the id from search_products first. To hide a product, set status ARCHIVED (preferred over deleting). Use set_product_stock for stock-only changes.",
@@ -31,7 +31,7 @@ export function registerWriteTools(server: McpServer) {
 
   defineTool(server, {
     name: "set_product_stock",
-    scope: "write",
+    needs: "update",
     hint: "write",
     description:
       "Set a product's stock to an exact number of units (absolute value, not a delta). Get the id from search_products first.",
@@ -41,7 +41,7 @@ export function registerWriteTools(server: McpServer) {
 
   defineTool(server, {
     name: "create_category",
-    scope: "write",
+    needs: "create",
     hint: "write",
     description: "Create a category. The slug is derived from the name if omitted. Check list_categories first to avoid duplicates.",
     input: categoryCreateSchema.shape,
@@ -50,7 +50,7 @@ export function registerWriteTools(server: McpServer) {
 
   defineTool(server, {
     name: "update_category",
-    scope: "write",
+    needs: "update",
     hint: "write",
     description: "Rename a category or change its slug. Get the id from list_categories first. Send only fields to change.",
     input: {
