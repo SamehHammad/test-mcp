@@ -1,16 +1,23 @@
 import Link from "next/link";
-import { money } from "@/components/ui";
+import { removeProduct } from "@/app/admin/actions";
+import { ConfirmDelete } from "@/components/confirm-delete";
+import { btnCls, btnGhostCls, money } from "@/components/ui";
 import { listActiveProductsCached } from "@/services/product-service";
 
 export default async function Home() {
   const products = await listActiveProductsCached();
   return (
     <main className="mx-auto max-w-5xl p-6">
-      <header className="mb-6 flex items-baseline justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Catalogue</h1>
-        <Link href="/admin/products" className="text-sm text-neutral-600 hover:underline">
-          Admin
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/admin/categories" className={btnGhostCls}>
+            Categories
+          </Link>
+          <Link href="/admin/products/new" className={btnCls}>
+            + Add product
+          </Link>
+        </div>
       </header>
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-left text-sm">
@@ -21,6 +28,7 @@ export default async function Home() {
               <th className="p-3">Description</th>
               <th className="p-3 text-right">Price</th>
               <th className="p-3 text-right">Stock</th>
+              <th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -41,11 +49,19 @@ export default async function Home() {
                 <td className={`p-3 text-right ${p.stock > 0 ? "text-neutral-600" : "text-red-700"}`}>
                   {p.stock > 0 ? p.stock : "Out of stock"}
                 </td>
+                <td className="p-3">
+                  <span className="flex items-center justify-end gap-3">
+                    <Link href={`/admin/products/${p.id}`} className={btnGhostCls}>
+                      Edit
+                    </Link>
+                    <ConfirmDelete name={p.name} action={removeProduct.bind(null, p.id, p.name)} />
+                  </span>
+                </td>
               </tr>
             ))}
             {products.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-4 text-neutral-500">
+                <td colSpan={6} className="p-4 text-neutral-500">
                   No active products.
                 </td>
               </tr>

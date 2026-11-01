@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { checkPassword, createSession, destroySession, requireAdmin } from "@/lib/session";
 import { createCategory, deleteCategory, updateCategory } from "@/services/category-service";
 import { explainError } from "@/services/errors";
 import { createProduct, deleteProduct, updateProduct } from "@/services/product-service";
@@ -21,19 +20,7 @@ async function guard<T>(fn: () => Promise<T>): Promise<{ error: string } | T> {
   }
 }
 
-export async function login(_: FormState, form: FormData): Promise<FormState> {
-  if (!checkPassword(text(form, "password"))) return { error: "Wrong password (or ADMIN_PASSWORD / SESSION_SECRET not set)" };
-  await createSession();
-  redirect("/admin/products");
-}
-
-export async function logout() {
-  await destroySession();
-  redirect("/login");
-}
-
 export async function saveProduct(_: FormState, form: FormData): Promise<FormState> {
-  await requireAdmin();
   const id = text(form, "id");
   const data = {
     name: text(form, "name"),
@@ -52,13 +39,11 @@ export async function saveProduct(_: FormState, form: FormData): Promise<FormSta
 }
 
 export async function removeProduct(id: string, name: string): Promise<FormState> {
-  await requireAdmin();
   const res = await guard(() => deleteProduct(id, { expectedName: name }));
   return "error" in res ? res : undefined;
 }
 
 export async function saveCategory(_: FormState, form: FormData): Promise<FormState> {
-  await requireAdmin();
   const id = text(form, "id");
   const data = { name: text(form, "name"), slug: optional(form, "slug") ?? undefined };
   const res = await guard(() => (id ? updateCategory(id, data) : createCategory(data)));
@@ -67,7 +52,6 @@ export async function saveCategory(_: FormState, form: FormData): Promise<FormSt
 }
 
 export async function removeCategory(id: string, name: string): Promise<FormState> {
-  await requireAdmin();
   const res = await guard(() => deleteCategory(id, { expectedName: name }));
   return "error" in res ? res : undefined;
 }

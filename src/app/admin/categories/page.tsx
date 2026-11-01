@@ -1,10 +1,8 @@
 import { CategoryForm } from "@/components/category-form";
 import { CategoryRow } from "@/components/category-row";
-import { requireAdmin } from "@/lib/session";
 import { listCategories } from "@/services/category-service";
 
 export default async function CategoriesPage() {
-  await requireAdmin();
   const categories = await listCategories();
   return (
     <>

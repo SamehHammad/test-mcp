@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { btnCls, btnGhostCls, inputCls, money, StatusBadge } from "@/components/ui";
-import { requireAdmin } from "@/lib/session";
 import { statusSchema } from "@/schemas/product";
 import { listProducts } from "@/services/product-service";
 import { removeProduct } from "../actions";
 
 export default async function ProductsPage({ searchParams }: PageProps<"/admin/products">) {
-  await requireAdmin();
   const sp = await searchParams;
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
   const q = one(sp.q);

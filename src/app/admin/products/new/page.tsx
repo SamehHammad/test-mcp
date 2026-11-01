@@ -1,9 +1,7 @@
 import { ProductForm } from "@/components/product-form";
-import { requireAdmin } from "@/lib/session";
 import { listCategories } from "@/services/category-service";
 
 export default async function NewProductPage() {
-  await requireAdmin();
   const categories = await listCategories();
   return (
     <>

@@ -1,6 +1,6 @@
 # products-admin
 
-Next.js 16 (App Router) product catalogue with a password-protected admin UI **and** an MCP server so Claude Desktop can manage products. Prisma 7 + Postgres (Neon), zod 3.25.
+Next.js 16 (App Router) product catalogue with an admin UI **and** an MCP server so Claude Desktop can manage products. Prisma 7 + Postgres (Neon), zod 3.25.
 
 All business logic lives in `src/services/` (product + category). The admin UI (server actions) and the MCP tools both call those services, and each write revalidates the cached pages inside the service.
 
@@ -15,11 +15,11 @@ npm run dev
 ```
 
 - `DATABASE_URL` - Postgres connection string. Prisma is configured in `prisma.config.ts`; the client uses `@prisma/adapter-pg`.
-- `ADMIN_PASSWORD` - password for `/login`.
-- `SESSION_SECRET` - random string (>= 32 chars) used to HMAC-sign the session cookie.
 - `MCP_TOKEN_<NAME>` - one variable per token: `MCP_TOKEN_OWNER="admin:<token>"`, `MCP_TOKEN_CREATOR="create:<token>"`, `MCP_TOKEN_VIEWER="read:<token>"` (scope: read | create | write | admin). The audit-log name is the lowercased suffix. The old comma-separated `MCP_TOKENS=name:scope:token,...` still works.
 
-Pages: `/` (ACTIVE products), `/login`, `/admin/products`, `/admin/categories`.
+Pages: `/` (ACTIVE products, with Add/Edit/Delete buttons), `/admin/products`, `/admin/categories`.
+
+> **No login:** the UI and its server actions are open to anyone who can reach the site. Only the MCP endpoint is protected (Bearer tokens).
 
 ## MCP server
 
@@ -77,7 +77,7 @@ Every write/delete is logged: `[mcp][write] <ISO time> token=<name> tool=<tool> 
 ### Production notes
 
 - Serve over **HTTPS** only; bearer tokens are sent on every request.
-- Set `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`, `MCP_TOKENS` as env vars on the server (never commit them).
+- Set `DATABASE_URL` and the `MCP_TOKEN_*` variables as env vars on the server (never commit them).
 - One token per person/client; **revoke by deleting its entry** from `MCP_TOKENS` and restarting.
 - Tokens are compared via SHA-256 digests with `timingSafeEqual`; the raw token is never kept or logged.
 - `mcp-handler` 1.x returns a streaming response before the tool finishes, so `route.ts` drains it (`drainBeforeReturn`); otherwise revalidations made inside tools are dropped.
@@ -93,7 +93,6 @@ Every write/delete is logged: `[mcp][write] <ISO time> token=<name> tool=<tool> 
 2. In **Project Settings -> Environment Variables** add (do **not** commit a `.env`):
    - `DATABASE_URL` - Neon **pooled** connection string (used by the app)
    - `DIRECT_URL` - optional, Neon **direct** (non-pooled) string, used only by `prisma migrate`
-   - `ADMIN_PASSWORD`, `SESSION_SECRET`
    - `MCP_TOKEN_OWNER="admin:<token>"`, `MCP_TOKEN_CREATOR="create:<token>"`, `MCP_TOKEN_VIEWER="read:<token>"` (generate new tokens for production)
 3. Seed once from your machine if you want sample data: `npx prisma db seed` (with `DATABASE_URL` pointing at the target DB).
 4. Point Claude Desktop / `mcp-remote` at `https://<your-domain>/api/mcp` with the token in the `Authorization: Bearer` header.
